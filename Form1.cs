@@ -28,11 +28,14 @@ namespace IkinariRename
         {
             InitializeComponent();
 
+            // 新規追加用の空行を無効化
+            dataGridView1.AllowUserToAddRows = false;
+
             // ① ヘッダーの中央揃え設定
             dataGridView1.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
 
             // ② フォントサイズの設定
-            Column3.DefaultCellStyle.Font = new Font(dataGridView1.Font.FontFamily, 10F, FontStyle.Bold);
+            Column3.DefaultCellStyle.Font = new Font(dataGridView1.Font.FontFamily, 10F, FontStyle.Regular);
 
             Font largerFont = new Font(dataGridView1.Font.FontFamily, 11F, FontStyle.Regular);
             Column7.DefaultCellStyle.Font = largerFont;
@@ -41,12 +44,51 @@ namespace IkinariRename
             // ③ 新写真ファイル名（Column8）の ReadOnly を解除し手入力修正可能にする
             Column8.ReadOnly = false;
 
+            // 起動時に「撮影日時順でソート」のラジオボタンを標準選択状態にする
+            if (rdoSortDate != null)
+            {
+                rdoSortDate.Checked = true;
+            }
+
             // 初期表示は「中（150px）」サイズ
             SetThumbnailSize(150, 200);
 
             dataGridView1.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
             dataGridView1.DataError += (s, e) => e.ThrowException = false;
             dataGridView1.CellPainting += DataGridView1_CellPainting;
+
+            // 「位置情報なし」のみ赤字で表示するフォーマット設定
+            dataGridView1.CellFormatting += DataGridView1_CellFormatting;
+        }
+
+        // 写真情報列の「位置情報なし」テキストを赤字で書式指定するイベント
+        private void DataGridView1_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (e.ColumnIndex == Column3.Index && e.Value != null)
+            {
+                string text = e.Value.ToString();
+                if (text.Contains("位置情報なし"))
+                {
+                    e.CellStyle.ForeColor = Color.Red;
+                }
+                else
+                {
+                    e.CellStyle.ForeColor = Color.Black;
+                }
+            }
+        }
+
+        // 古いサムネイル画像のメモリを安全に破棄する保護用メソッド
+        private void ClearDataGridViewRowsSafely()
+        {
+            foreach (DataGridViewRow row in dataGridView1.Rows)
+            {
+                if (row.Cells[Column4.Index].Value is Image img)
+                {
+                    img.Dispose();
+                }
+            }
+            dataGridView1.Rows.Clear();
         }
 
         // サムネイル表示サイズを変更する共通メソッド
@@ -59,6 +101,15 @@ namespace IkinariRename
             }
 
             Column4.Width = colWidth;
+
+            if (rowHeight <= 75)
+            {
+                Column3.DefaultCellStyle.Font = new Font(dataGridView1.Font.FontFamily, 8.5F, FontStyle.Regular);
+            }
+            else
+            {
+                Column3.DefaultCellStyle.Font = new Font(dataGridView1.Font.FontFamily, 10F, FontStyle.Regular);
+            }
 
             int gridWidth = Column1.Width + Column3.Width + colWidth + Column7.Width + colType.Width + Column8.Width;
             int targetWidth = gridWidth + 100;
@@ -82,14 +133,13 @@ namespace IkinariRename
             }
         }
 
-        // 写真読み込みおよび並び替え処理（JPG / JPEG / HEIC に対応）
+        // 写真読み込みおよび並び替え処理
         private void LoadAndDisplayPhotos()
         {
             if (string.IsNullOrEmpty(selectedFolderPath)) return;
 
-            dataGridView1.Rows.Clear();
+            ClearDataGridViewRowsSafely();
 
-            // JPG, JPEG, HEIC ファイルを取得
             string[] files = System.IO.Directory.GetFiles(selectedFolderPath, "*.*", SearchOption.TopDirectoryOnly)
                              .Where(f => f.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
                                          f.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ||
@@ -113,10 +163,8 @@ namespace IkinariRename
                 {
                     if (isHeic)
                     {
-                        // Magick.NET を用いて HEIC からサムネイルとEXIFメタデータを抽出
                         using (var image = new MagickImage(filePath))
                         {
-                            // サムネイル生成（300x300）
                             using (var ms = new MemoryStream())
                             {
                                 image.Format = MagickFormat.Jpeg;
@@ -126,7 +174,6 @@ namespace IkinariRename
                                 thumbnail = new Bitmap(ms);
                             }
 
-                            // EXIFデータ解析
                             var profile = image.GetExifProfile();
                             if (profile != null)
                             {
@@ -150,7 +197,6 @@ namespace IkinariRename
                             }
                         }
 
-                        // GPS情報は MetadataExtractor で補完取得
                         var directories = ImageMetadataReader.ReadMetadata(filePath);
                         var gpsDir = directories.OfType<GpsDirectory>().FirstOrDefault();
                         if (gpsDir != null && gpsDir.GetGeoLocation() != null)
@@ -162,7 +208,6 @@ namespace IkinariRename
                     }
                     else
                     {
-                        // 従来の JPG / JPEG 処理
                         var directories = ImageMetadataReader.ReadMetadata(filePath);
 
                         var subIfdDir = directories.OfType<ExifSubIfdDirectory>().FirstOrDefault();
@@ -226,7 +271,10 @@ namespace IkinariRename
             int index = 1;
             foreach (var photo in sortedPhotos)
             {
-                string photoInfoText = $"No.{index:D2}\n\n{photo.TakeDateTimeStr}\n緯度: {photo.Latitude}\n経度: {photo.Longitude}";
+                bool hasGps = !string.IsNullOrEmpty(photo.Latitude) && !string.IsNullOrEmpty(photo.Longitude);
+                string gpsStatusText = hasGps ? "位置情報あり" : "位置情報なし";
+
+                string photoInfoText = $"No.{index:D2}\n\n{photo.TakeDateTimeStr}\n\n{gpsStatusText}";
 
                 int rowIndex = dataGridView1.Rows.Add(false, photoInfoText, photo.Thumbnail, "", "近景", "");
 
@@ -288,11 +336,20 @@ namespace IkinariRename
         private void btnSizeMedium_Click(object sender, EventArgs e) => SetThumbnailSize(150, 200);
         private void btnSizeLarge_Click(object sender, EventArgs e) => SetThumbnailSize(250, 330);
 
-        // ② 入力時の新ファイル名自動計算 & 自動チェック連動
+        // ② 入力時の新ファイル名自動計算 & 直接手入力時の自動チェック連動
         private void dataGridView1_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0) return;
 
+            // ★「新写真ファイル名」（Column8）へ直接手入力した際の自動チェック処理
+            if (e.ColumnIndex == Column8.Index)
+            {
+                string directVal = Convert.ToString(dataGridView1.Rows[e.RowIndex].Cells[Column8.Index].Value)?.Trim() ?? "";
+                dataGridView1.Rows[e.RowIndex].Cells[Column1.Index].Value = !string.IsNullOrEmpty(directVal);
+                return;
+            }
+
+            // 「点名」または「種別」が変更された場合の連動処理
             Dictionary<string, int> counts = new Dictionary<string, int>();
 
             foreach (DataGridViewRow row in dataGridView1.Rows)
@@ -336,12 +393,50 @@ namespace IkinariRename
             }
         }
 
-        // ③ リネーム実行ボタン（HEICは拡張子を .jpg に自動変更して保存）
+        // ③ リネーム実行ボタン
         private void btnRename_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(selectedFolderPath))
             {
                 MessageBox.Show("先に写真フォルダを選択してください。", "案内", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var nameMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var duplicateNames = new List<string>();
+
+            foreach (DataGridViewRow row in dataGridView1.Rows)
+            {
+                if (row.IsNewRow) continue;
+                bool isSelected = Convert.ToBoolean(row.Cells[Column1.Index].Value);
+
+                if (isSelected && row.Tag is PhotoTagInfo tagInfo)
+                {
+                    string newName = Convert.ToString(row.Cells[Column8.Index].Value)?.Trim();
+                    if (string.IsNullOrEmpty(newName))
+                    {
+                        newName = Path.GetFileNameWithoutExtension(tagInfo.FilePath);
+                    }
+
+                    if (nameMap.ContainsKey(newName))
+                    {
+                        duplicateNames.Add($"・「{newName}」（{nameMap[newName]} と {tagInfo.TempNo}）");
+                    }
+                    else
+                    {
+                        nameMap[newName] = tagInfo.TempNo;
+                    }
+                }
+            }
+
+            if (duplicateNames.Count > 0)
+            {
+                string dupMsg = "新写真ファイル名に重複が検出されました。\n同じ名前で保存すると写真が上書きされてしまいます。\n\n【重複リスト】\n" +
+                                string.Join("\n", duplicateNames.Take(5));
+                if (duplicateNames.Count > 5) dupMsg += $"\n…他 {duplicateNames.Count - 5} 件";
+
+                dupMsg += "\n\nファイル名を修正してから再度リネームを実行してください。";
+                MessageBox.Show(dupMsg, "重複エラー（処理中断）", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -399,6 +494,7 @@ namespace IkinariRename
 
             int successCount = 0;
             int skippedCount = 0;
+            List<string> errorLog = new List<string>();
 
             foreach (DataGridViewRow row in dataGridView1.Rows)
             {
@@ -440,14 +536,26 @@ namespace IkinariRename
                         }
                         successCount++;
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        errorLog.Add($"{Path.GetFileName(tagInfo.FilePath)}: {ex.Message}");
+                    }
                 }
             }
 
-            MessageBox.Show($"処理が完了しました！\n成功: {successCount} 件\nスキップ: {skippedCount} 件", "完了", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            string resultMsg = $"処理が完了しました！\n成功: {successCount} 件\nスキップ: {skippedCount} 件";
+            if (errorLog.Count > 0)
+            {
+                resultMsg += $"\n失敗: {errorLog.Count} 件\n\n【失敗詳細】\n" + string.Join("\n", errorLog.Take(5));
+                MessageBox.Show(resultMsg, "完了（一部失敗あり）", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            else
+            {
+                MessageBox.Show(resultMsg, "完了", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
 
-        // ★HEIC画像をJPG形式へ変換・保存するメソッド（型キャスト型修飾子を追加）
+        // HEIC画像をJPG形式へ変換・保存するメソッド
         private void ConvertHeicToJpg(string srcPath, string destPath, bool doDownsize)
         {
             using (var image = new MagickImage(srcPath))
@@ -550,7 +658,14 @@ namespace IkinariRename
                 return;
             }
 
-            Document kmlDoc = new Document { Name = "写真撮影位置" };
+            Document kmlDoc = new Document
+            {
+                Id = "IkinariRename_PhotoLocations",
+                Name = "写真撮影位置"
+            };
+
+            int exportedCount = 0;
+            int skippedCount = 0;
 
             foreach (DataGridViewRow row in dataGridView1.Rows)
             {
@@ -569,6 +684,11 @@ namespace IkinariRename
                         };
 
                         kmlDoc.AddFeature(placemark);
+                        exportedCount++;
+                    }
+                    else
+                    {
+                        skippedCount++;
                     }
                 }
             }
@@ -581,6 +701,18 @@ namespace IkinariRename
 
             isKmlExported = true;
 
+            string kmlMsg;
+            if (skippedCount > 0)
+            {
+                kmlMsg = $"{exportedCount}件の位置情報をGoogleアース用に出力しました\n（{skippedCount}件は位置情報なしのためスキップ）";
+            }
+            else
+            {
+                kmlMsg = $"{exportedCount}件の位置情報をGoogleアース用に出力しました。";
+            }
+
+            MessageBox.Show(kmlMsg, "出力完了", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
             try
             {
                 ProcessStartInfo psi = new ProcessStartInfo
@@ -590,10 +722,7 @@ namespace IkinariRename
                 };
                 Process.Start(psi);
             }
-            catch
-            {
-                MessageBox.Show($"Googleアース用ファイルを出力しました:\n{savePath}", "完了");
-            }
+            catch { }
         }
 
         // 全選択・全解除処理

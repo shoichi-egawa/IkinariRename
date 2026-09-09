@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             button1 = new Button();
             dataGridView1 = new DataGridView();
             Column1 = new DataGridViewCheckBoxColumn();
@@ -64,7 +64,8 @@
             // dataGridView1
             // 
             dataGridView1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            dataGridView1.BackgroundColor = SystemColors.GradientInactiveCaption;
+            dataGridView1.BackgroundColor = SystemColors.InactiveCaption;
+            dataGridView1.BorderStyle = BorderStyle.None;
             dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridView1.Columns.AddRange(new DataGridViewColumn[] { Column1, Column3, Column4, Column7, colType, Column8 });
             dataGridView1.GridColor = SystemColors.ControlText;
@@ -84,8 +85,8 @@
             // 
             // Column3
             // 
-            dataGridViewCellStyle1.BackColor = Color.White;
-            Column3.DefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle2.BackColor = Color.White;
+            Column3.DefaultCellStyle = dataGridViewCellStyle2;
             Column3.HeaderText = "写真情報";
             Column3.Name = "Column3";
             // 
