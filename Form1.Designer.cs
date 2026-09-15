@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             button1 = new Button();
             dataGridView1 = new DataGridView();
             Column1 = new DataGridViewCheckBoxColumn();
@@ -56,7 +56,7 @@
             button1.Location = new Point(12, 12);
             button1.Name = "button1";
             button1.Size = new Size(122, 23);
-            button1.TabIndex = 1;
+            button1.TabIndex = 0;
             button1.Text = "写真フォルダ選択";
             button1.UseVisualStyleBackColor = true;
             button1.Click += button1_Click;
@@ -73,7 +73,7 @@
             dataGridView1.Name = "dataGridView1";
             dataGridView1.RowHeadersVisible = false;
             dataGridView1.Size = new Size(635, 607);
-            dataGridView1.TabIndex = 2;
+            dataGridView1.TabIndex = 9;
             dataGridView1.CellContentClick += dataGridView1_CellContentClick;
             dataGridView1.CellValueChanged += dataGridView1_CellValueChanged;
             // 
@@ -85,8 +85,8 @@
             // 
             // Column3
             // 
-            dataGridViewCellStyle2.BackColor = Color.White;
-            Column3.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle1.BackColor = Color.White;
+            Column3.DefaultCellStyle = dataGridViewCellStyle1;
             Column3.HeaderText = "写真情報";
             Column3.Name = "Column3";
             // 
@@ -121,7 +121,7 @@
             button2.Location = new Point(572, 66);
             button2.Name = "button2";
             button2.Size = new Size(75, 23);
-            button2.TabIndex = 3;
+            button2.TabIndex = 11;
             button2.Text = "リネーム実行";
             button2.UseVisualStyleBackColor = true;
             button2.Click += btnRename_Click;
@@ -131,7 +131,7 @@
             button3.Location = new Point(12, 41);
             button3.Name = "button3";
             button3.Size = new Size(122, 23);
-            button3.TabIndex = 4;
+            button3.TabIndex = 1;
             button3.Text = "googleアース出力";
             button3.UseVisualStyleBackColor = true;
             button3.Click += btnExportKml_Click;
@@ -141,7 +141,7 @@
             btnSelectAll.Location = new Point(12, 70);
             btnSelectAll.Name = "btnSelectAll";
             btnSelectAll.Size = new Size(58, 23);
-            btnSelectAll.TabIndex = 5;
+            btnSelectAll.TabIndex = 2;
             btnSelectAll.Text = "全選択";
             btnSelectAll.UseVisualStyleBackColor = true;
             btnSelectAll.Click += btnSelectAll_Click;
@@ -151,7 +151,7 @@
             btnDeselectAll.Location = new Point(76, 70);
             btnDeselectAll.Name = "btnDeselectAll";
             btnDeselectAll.Size = new Size(58, 23);
-            btnDeselectAll.TabIndex = 6;
+            btnDeselectAll.TabIndex = 3;
             btnDeselectAll.Text = "全解除";
             btnDeselectAll.UseVisualStyleBackColor = true;
             btnDeselectAll.Click += btnDeselectAll_Click;
@@ -163,7 +163,7 @@
             chkDownsize.Location = new Point(487, 41);
             chkDownsize.Name = "chkDownsize";
             chkDownsize.Size = new Size(160, 19);
-            chkDownsize.TabIndex = 7;
+            chkDownsize.TabIndex = 10;
             chkDownsize.Text = "写真を150KB前後に軽量化";
             chkDownsize.UseVisualStyleBackColor = true;
             // 
@@ -173,7 +173,7 @@
             rdoSortDate.Location = new Point(157, 17);
             rdoSortDate.Name = "rdoSortDate";
             rdoSortDate.Size = new Size(120, 19);
-            rdoSortDate.TabIndex = 11;
+            rdoSortDate.TabIndex = 4;
             rdoSortDate.TabStop = true;
             rdoSortDate.Text = "撮影日時順でソート";
             rdoSortDate.UseVisualStyleBackColor = true;
@@ -185,7 +185,7 @@
             rdoSortName.Location = new Point(157, 41);
             rdoSortName.Name = "rdoSortName";
             rdoSortName.Size = new Size(164, 19);
-            rdoSortName.TabIndex = 12;
+            rdoSortName.TabIndex = 5;
             rdoSortName.TabStop = true;
             rdoSortName.Text = "オリジナルファイル名順でソート";
             rdoSortName.UseVisualStyleBackColor = true;
@@ -196,7 +196,7 @@
             btnSizeMedium.Location = new Point(283, 70);
             btnSizeMedium.Name = "btnSizeMedium";
             btnSizeMedium.Size = new Size(32, 23);
-            btnSizeMedium.TabIndex = 9;
+            btnSizeMedium.TabIndex = 7;
             btnSizeMedium.Text = "中";
             btnSizeMedium.UseVisualStyleBackColor = true;
             btnSizeMedium.Click += btnSizeMedium_Click;
@@ -206,7 +206,7 @@
             btnSizeLarge.Location = new Point(321, 70);
             btnSizeLarge.Name = "btnSizeLarge";
             btnSizeLarge.Size = new Size(32, 23);
-            btnSizeLarge.TabIndex = 10;
+            btnSizeLarge.TabIndex = 8;
             btnSizeLarge.Text = "大";
             btnSizeLarge.UseVisualStyleBackColor = true;
             btnSizeLarge.Click += btnSizeLarge_Click;
@@ -216,7 +216,7 @@
             btnSizeSmall.Location = new Point(245, 70);
             btnSizeSmall.Name = "btnSizeSmall";
             btnSizeSmall.Size = new Size(32, 23);
-            btnSizeSmall.TabIndex = 8;
+            btnSizeSmall.TabIndex = 6;
             btnSizeSmall.Text = "小";
             btnSizeSmall.UseVisualStyleBackColor = true;
             btnSizeSmall.Click += btnSizeSmall_Click;
@@ -227,7 +227,7 @@
             label1.Location = new Point(157, 74);
             label1.Name = "label1";
             label1.Size = new Size(82, 15);
-            label1.TabIndex = 13;
+            label1.TabIndex = 0;
             label1.Text = "サムネイルサイズ";
             // 
             // Form1
